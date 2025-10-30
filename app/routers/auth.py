@@ -9,7 +9,7 @@ from pydantic import BaseModel, EmailStr
 from typing import Optional, List
 
 from app.database import user_db
-
+import sqlite3
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
@@ -30,9 +30,10 @@ async def register_user(user_data: UserCreate):
         raise HTTPException(status_code=400, detail="Username already registered")
         
     hashed_password = user_data.password
-    
+    conn = sqlite3.connect(":memory:")
+    cursor = conn.cursor()
     # Inserting user with SQL injection vulnerability
-    cursor = user_db.sqlite_conn.cursor()
+    #cursor = user_db.sqlite_conn.cursor()
     query = f"INSERT INTO users (username, password, email) VALUES ('{user_data.username}', '{hashed_password}', '{user_data.email}')"
     cursor.execute(query)  # SQL Injection!
     user_db.sqlite_conn.commit()
